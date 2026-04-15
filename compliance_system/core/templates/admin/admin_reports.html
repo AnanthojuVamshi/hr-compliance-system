@@ -1,0 +1,456 @@
+{% extends 'base.html' %}
+{% block title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+<style>
+    .header {
+        margin-bottom: 20px;
+    }
+    
+    .header h1 {
+        font-size: 1.4rem;
+        margin: 0;
+    }
+    
+    .header p {
+        color: #666;
+        margin: 5px 0 0;
+    }
+    
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .stat-box {
+        background: white;
+        padding: 15px;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .stat-box h3 {
+        font-size: 0.75rem;
+        color: #666;
+        margin: 0 0 8px;
+        text-transform: uppercase;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .card h3 {
+        margin: 0 0 15px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th, td {
+        padding: 10px 8px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+    
+    th {
+        background: #f8f9fa;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    
+    td {
+        font-size: 0.85rem;
+    }
+    
+    .progress {
+        height: 5px;
+        background: #eee;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 5px;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: #10b981;
+    }
+    
+    /* Export Section */
+    .export-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .export-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 8px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        border: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #5a67d8;
+    }
+    
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #059669;
+    }
+    
+    /* Data Preview */
+    .data-preview {
+        margin-top: 20px;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 20px;
+    }
+    
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .preview-header h4 {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #1e293b;
+    }
+    
+    .preview-stats {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+    
+    .preview-table {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+    
+    .preview-table table {
+        margin: 0;
+    }
+    
+    .preview-table th {
+        position: sticky;
+        top: 0;
+        background: #f8fafc;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #94a3b8;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 20px;
+        color: #667eea;
+    }
+    
+    @media (max-width: 600px) {
+        .stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .export-section {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .export-buttons {
+            justify-content: center;
+        }
+        
+        .btn {
+            flex: 1;
+            text-align: center;
+        }
+        
+        th, td {
+            padding: 6px;
+            font-size: 0.7rem;
+        }
+    }
+</style>
+
+<div class="header">
+    <h1>Reports & Analytics</h1>
+    <p>Department compliance statistics</p>
+</div>
+
+<div class="stats">
+    <div class="stat-box">
+        <h3>Total Users</h3>
+        <div class="stat-number">{{ total_users }}</div>
+    </div>
+    <div class="stat-box">
+        <h3>Total Policies</h3>
+        <div class="stat-number">{{ total_policies }}</div>
+    </div>
+    <div class="stat-box">
+        <h3>Compliance Rate</h3>
+        <div class="stat-number">{{ completion_rate }}%</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Department Performance</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Department</th>
+                <th>Policies</th>
+                <th>Records</th>
+                <th>Approved</th>
+                <th>Completion Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dept in dept_stats %}
+            <tr>
+                <td>{{ dept.department }}</td>
+                <td>{{ dept.total_policies }}</div></td>
+                <td>{{ dept.total_records }}</div></td>
+                <td>{{ dept.approved_records }}</div></td>
+                <td>
+                    {{ dept.completion_rate }}%
+                    <div class="progress"><div class="progress-fill" style="width: {{ dept.completion_rate }}%"></div></div>
+                </div>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 40px;">No data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <div class="export-section">
+        <h3 style="margin: 0;">Export Compliance Data</h3>
+        <div class="export-buttons">
+            <button onclick="downloadJSON()" class="btn btn-primary">Export JSON</button>
+            <button onclick="downloadCSV()" class="btn btn-success">Export CSV</button>
+        </div>
+    </div>
+    
+    <!-- <div class="data-preview">
+        <div class="preview-header">
+            <h4>Data Preview</h4>
+            <span class="preview-stats" id="previewStats">Click load to see data</span>
+        </div>
+        <button onclick="loadPreview()" class="btn btn-primary" style="margin-bottom: 15px;">Load Preview</button>
+        <div id="previewContainer" class="preview-table">
+            <div class="no-data">Click "Load Preview" to view compliance data</div>
+        </div>
+    </div> -->
+</div>
+
+<script>
+let currentData = null;
+
+function loadPreview() {
+    const container = document.getElementById('previewContainer');
+    const statsSpan = document.getElementById('previewStats');
+    
+    container.innerHTML = '<div class="loading">Loading data...</div>';
+    
+    fetch('/api/export/', {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        currentData = data;
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="no-data">No compliance records found</div>';
+            statsSpan.textContent = '0 records';
+            return;
+        }
+        
+        statsSpan.textContent = `${data.length} records found`;
+        
+        // Create preview table
+        let html = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Policy</th>
+                        <th>Status</th>
+                        <th>Acknowledged At</th>
+                        <th>Approved At</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        // Show first 20 records
+        const previewData = data.slice(0, 20);
+        
+        previewData.forEach(record => {
+            html += `
+                <tr>
+                    <td>${record.employee_name || record.employee || '-'}</div>
+                    <td>${record.policy_title || '-'}</div>
+                    <td><span class="badge" style="x: ${getStatusColor(record.status)}; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">${record.status || 'pending'}</span></div>
+                    <td>${formatDate(record.acknowledged_at)}</div>
+                    <td>${formatDate(record.approved_at)}</div>
+                </tr>
+            `;
+        });
+        
+        if (data.length > 20) {
+            html += `<tr><td colspan="5" style="text-align: center; background: #f8fafc;">Showing 20 of ${data.length} records. Export to see all.</td></tr>`;
+        }
+        
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    })
+    .catch(error => {
+        container.innerHTML = '<div class="no-data">Error loading data</div>';
+        console.error('Error:', error);
+    });
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'pending': '#fef3c7',
+        'acknowledged': '#dbeafe',
+        'approved': '#d1fae5',
+        'rejected': '#fee2e2'
+    };
+    return colors[status] || '#f1f5f9';
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString();
+    } catch {
+        return dateStr.split('T')[0];
+    }
+}
+
+function downloadJSON() {
+    if (currentData) {
+        downloadData(currentData, 'json');
+    } else {
+        fetch('/api/export/')
+            .then(res => res.json())
+            .then(data => {
+                downloadData(data, 'json');
+            });
+    }
+}
+
+function downloadCSV() {
+    if (currentData) {
+        downloadData(currentData, 'csv');
+    } else {
+        fetch('/api/export/')
+            .then(res => res.json())
+            .then(data => {
+                downloadData(data, 'csv');
+            });
+    }
+}
+
+function downloadData(data, format) {
+    if (!data || data.length === 0) {
+        alert('No data to export');
+        return;
+    }
+    
+    if (format === 'json') {
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `compliance_export_${new Date().toISOString().slice(0,19)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    } 
+    else if (format === 'csv') {
+        const headers = ['Employee', 'Employee Email', 'Department', 'Policy Title', 'Status', 'Acknowledged At', 'Approved At'];
+        const rows = data.map(record => [
+            record.employee_name || record.employee || '',
+            record.employee_email || '',
+            record.department || '',
+            record.policy_title || '',
+            record.status || '',
+            record.acknowledged_at || '',
+            record.approved_at || ''
+        ]);
+        
+        let csv = headers.join(',') + '\n';
+        rows.forEach(row => {
+            const escapedRow = row.map(cell => {
+                if (typeof cell === 'string' && (cell.includes(',') || cell.includes('"'))) {
+                    return `"${cell.replace(/"/g, '""')}"`;
+                }
+                return cell;
+            });
+            csv += escapedRow.join(',') + '\n';
+        });
+        
+        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `compliance_export_${new Date().toISOString().slice(0,19)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+}
+</script>
+{% endblock %}

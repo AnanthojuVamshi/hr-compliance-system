@@ -1,0 +1,105 @@
+{% extends 'base_public.html' %}
+{% block title %}Register - HR Compliance System{% endblock %}
+{% block content %}
+<div class="split-container">
+    <div class="split-card">
+        <!-- Left Side -->
+        <div class="split-left">
+            <div class="brand-content">
+                <div class="brand-icon">📝</div>
+                <h1>Join Our<br>Compliance Network</h1>
+                <p>Create your account to start managing policies and tracking compliance.</p>
+                <div class="stats-showcase">
+                    <div class="stat-item">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Companies</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">10K+</div>
+                        <div class="stat-label">Users</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Compliance Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Side -->
+        <div class="split-right">
+            <div class="form-wrapper">
+                <div class="form-header">
+                    <h2>Create Account</h2>
+                    <p>Get started with HR Compliance System</p>
+                </div>
+                
+                <form method="post" class="split-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label>Username</label>
+                        <div class="input-group">
+                            <span class="input-icon">👤</span>
+                            {{ form.username }}
+                        </div>
+                        {% if form.username.errors %}
+                            <div class="error-text">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Email</label>
+                        <div class="input-group">
+                            <span class="input-icon">📧</span>
+                            {{ form.email }}
+                        </div>
+                        {% if form.email.errors %}
+                            <div class="error-text">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-group">
+                            <span class="input-icon">🔒</span>
+                            {{ form.password1 }}
+                        </div>
+                        {% if form.password1.errors %}
+                            <div class="error-text">{{ form.password1.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-icon">✓</span>
+                            {{ form.password2 }}
+                        </div>
+                        {% if form.password2.errors %}
+                            <div class="error-text">{{ form.password2.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Department</label>
+                        <div class="input-group">
+                            <span class="input-icon">🏢</span>
+                            {{ form.department }}
+                        </div>
+                        {% if form.department.errors %}
+                            <div class="error-text">{{ form.department.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn-login">Create Account</button>
+                </form>
+                
+                <div class="form-footer">
+                    <p>Already have an account? <a href="{% url 'login' %}">Sign In</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

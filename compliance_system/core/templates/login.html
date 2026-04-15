@@ -1,0 +1,78 @@
+{% extends 'base_public.html' %}
+{% block title %}Login - HR Compliance System{% endblock %}
+{% block content %}
+<div class="split-container">
+    <div class="split-card">
+        <!-- Left Side -->
+        <div class="split-left">
+            <div class="brand-content">
+                <div class="brand-icon">📋</div>
+                <h1>HR Compliance<br>Management System</h1>
+                <p>Manage employee policies, track acknowledgments, and ensure compliance all in one place.</p>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Policy Management</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Compliance Tracking</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Real-time Reports</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Role-based Access</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Side -->
+        <div class="split-right">
+            <div class="form-wrapper">
+                <div class="form-header">
+                    <h2>Welcome Back!</h2>
+                    <p>Please login to your account</p>
+                </div>
+                
+                <form method="post" class="split-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Username</label>
+                        <div class="input-group">
+                            <span class="input-icon">👤</span>
+                            <input type="text" name="username" placeholder="Enter your username" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-group">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" name="password" placeholder="Enter your password" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="remember"> Remember me
+                        </label>
+                        <a href="#" class="forgot-link">Forgot Password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn-login">Sign In</button>
+                </form>
+                
+                <div class="form-footer">
+                    <p>Don't have an account? <a href="{% url 'register' %}">Create Account</a></p>
+                </div>
+                
+               
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

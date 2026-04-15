@@ -1,0 +1,492 @@
+{% extends 'base.html' %}
+{% block title %}Manage Policies{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .page-header h1 {
+        font-size: 1.5rem;
+        color: #1e293b;
+        margin: 0;
+    }
+    
+    .filters {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .filter-form {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    
+    .filter-form select {
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        min-width: 200px;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        text-align: left;
+        padding: 12px 16px;
+        background: #f8fafc;
+        font-weight: 600;
+        color: #1e293b;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+    
+    tr:hover {
+        background: #f8fafc;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary:hover {
+        background: #5a67d8;
+    }
+    
+    .btn-small {
+        background: #667eea;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.75rem;
+        display: inline-block;
+        margin-right: 6px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-small:hover {
+        background: #5a67d8;
+    }
+    
+    .btn-edit {
+        background: #10b981;
+    }
+    
+    .btn-edit:hover {
+        background: #059669;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #94a3b8;
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .modal-content {
+        background: white;
+        max-width: 500px;
+        width: 90%;
+        border-radius: 12px;
+        padding: 24px;
+        position: relative;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+    
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #94a3b8;
+    }
+    
+    .close-modal:hover {
+        color: #ef4444;
+    }
+    
+    .modal .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .modal .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+    
+    .modal .form-group input,
+    .modal .form-group select,
+    .modal .form-group textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-family: inherit;
+    }
+    
+    .modal .form-group textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-form {
+            flex-direction: column;
+        }
+        
+        .filter-form select {
+            width: 100%;
+        }
+        
+        th, td {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+        
+        .modal-content {
+            width: 95%;
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h1>📄 Policy Management</h1>
+    <a href="{% url 'admin_policy_create' %}" class="btn-primary">+ Create Policy</a>
+</div>
+
+<div class="filters">
+    <form method="get" class="filter-form">
+        <select name="department">
+            <option value="">All Departments</option>
+            {% for dept in departments %}
+            <option value="{{ dept }}" {% if current_department == dept %}selected{% endif %}>{{ dept }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn-primary" style="padding: 8px 20px;">Filter</button>
+    </form>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Department</th>
+                <th>Created By</th>
+                <th>Deadline</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="policiesTableBody">
+            {% for policy in policies %}
+            <tr id="policy-row-{{ policy.id }}">
+                <td>{{ policy.title }}</td>
+                <td>{{ policy.department }}</td>
+                <td>{{ policy.created_by.username }}</td>
+                <td>{{ policy.deadline }}</td>
+                <td>{{ policy.created_at|date:"M d, Y" }}</td>
+                <td>
+                    <button class="btn-small btn-edit" onclick="openEditModal({{ policy.id }})">Edit</button>
+                    <button class="btn-small btn-danger" onclick="deletePolicy({{ policy.id }}, '{{ policy.title|escapejs }}')">Delete</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="empty-state">No policies found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Policy</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="editForm">
+            {% csrf_token %}
+            <input type="hidden" id="editPolicyId" name="policy_id">
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="editTitle" name="title" required>
+            </div>
+            <div class="form-group">
+                <label>Description *</label>
+                <textarea id="editDescription" name="description" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Department *</label>
+                <select id="editDepartment" name="department" required>
+                    {% for dept in departments %}
+                    <option value="{{ dept }}">{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Deadline *</label>
+                <input type="date" id="editDeadline" name="deadline" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-small" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Open Edit Modal
+function openEditModal(policyId) {
+    fetch(`/dashboard/policies/edit/${policyId}/`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('editPolicyId').value = data.id;
+        document.getElementById('editTitle').value = data.title;
+        document.getElementById('editDescription').value = data.description;
+        document.getElementById('editDepartment').value = data.department;
+        document.getElementById('editDeadline').value = data.deadline;
+        document.getElementById('editModal').style.display = 'flex';
+    });
+}
+
+// Close Modal
+function closeModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+// Handle Edit Form Submit
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const policyId = document.getElementById('editPolicyId').value;
+    const formData = new FormData(this);
+    
+    fetch(`/dashboard/policies/edit/${policyId}/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the table row
+            const row = document.getElementById(`policy-row-${policyId}`);
+            if (row) {
+                row.cells[0].textContent = document.getElementById('editTitle').value;
+                row.cells[1].textContent = document.getElementById('editDepartment').value;
+                row.cells[3].textContent = document.getElementById('editDeadline').value;
+            }
+            closeModal();
+            showMessage(data.message, 'success');
+        }
+    });
+});
+
+// Delete Policy
+function deletePolicy(policyId, policyTitle) {
+    if (confirm(`Are you sure you want to delete "${policyTitle}"?`)) {
+        fetch(`/dashboard/policies/delete/${policyId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove row from table
+                const row = document.getElementById(`policy-row-${policyId}`);
+                if (row) row.remove();
+                
+                // Check if table is empty
+                const tbody = document.getElementById('policiesTableBody');
+                if (tbody.children.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No policies found</td></tr>';
+                }
+                
+                showMessage(data.message, 'success');
+            }
+        });
+    }
+}
+
+// Show message
+function showMessage(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.innerHTML = `${type === 'success' ? '✓' : '✗'} ${message}`;
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+    `;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+
+// Close modal on outside click
+window.onclick = function(event) {
+    const modal = document.getElementById('editModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+});
+
+// Add animation style
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

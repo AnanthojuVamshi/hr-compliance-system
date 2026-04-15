@@ -1,0 +1,51 @@
+# Create .gitignore
+@"
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+compEnv/
+venv/
+env/
+ENV/
+.venv
+
+# Django
+*.log
+*.pot
+db.sqlite3
+staticfiles/
+media/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+.Dockerfile
+.dockerignore
+
+# Secrets
+*.key
+*.pem
+*.crt
+
+# Database
+*.sqlite3
+*.db
+"@ | Out-File -FilePath .gitignore -Encoding utf8

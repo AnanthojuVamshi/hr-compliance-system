@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% block title %}Compliance Records{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        margin-bottom: 25px;
+    }
+    
+    .page-header h1 {
+        font-size: 1.5rem;
+        color: #1e293b;
+        margin: 0 0 8px 0;
+    }
+    
+    .page-header p {
+        color: #64748b;
+        margin: 0;
+        font-size: 0.85rem;
+    }
+    
+    .filters {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .filter-form {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .filter-group label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+    
+    .filter-form select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        font-size: 0.85rem;
+    }
+    
+    .filter-form select:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    
+    .btn-filter {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+    
+    .btn-filter:hover {
+        background: #5a67d8;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        text-align: left;
+        padding: 12px 16px;
+        background: #f8fafc;
+        font-weight: 600;
+        color: #1e293b;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.85rem;
+    }
+    
+    td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        font-size: 0.85rem;
+    }
+    
+    tr:hover {
+        background: #f8fafc;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+    
+    .badge.pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .badge.acknowledged {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .badge.approved {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .badge.rejected {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+    }
+    
+    @media (max-width: 768px) {
+        .filter-form {
+            flex-direction: column;
+        }
+        
+        .filter-group {
+            width: 100%;
+        }
+        
+        .btn-filter {
+            width: 100%;
+        }
+        
+        th, td {
+            padding: 8px 12px;
+            font-size: 0.75rem;
+        }
+        
+        th:nth-child(5),
+        td:nth-child(5),
+        th:nth-child(6),
+        td:nth-child(6) {
+            display: none;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        th:nth-child(2),
+        td:nth-child(2) {
+            display: none;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h1>Compliance Records</h1>
+    <p>Monitor employee policy acknowledgment status</p>
+</div>
+
+<div class="filters">
+    <form method="get" class="filter-form">
+        <div class="filter-group">
+            <label>Status</label>
+            <select name="status">
+                <option value="">All Status</option>
+                <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="acknowledged" {% if current_status == 'acknowledged' %}selected{% endif %}>Acknowledged</option>
+                <option value="approved" {% if current_status == 'approved' %}selected{% endif %}>Approved</option>
+                <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Department</label>
+            <select name="department">
+                <option value="">All Departments</option>
+                {% for dept in departments %}
+                <option value="{{ dept }}" {% if current_department == dept %}selected{% endif %}>{{ dept }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="submit" class="btn-filter">Apply Filter</button>
+    </form>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Department</th>
+                <th>Policy</th>
+                <th>Status</th>
+                <th>Acknowledged</th>
+                <th>Approved</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td data-label="Employee">{{ record.employee.username }}</td>
+                <td data-label="Department">{{ record.employee.department|default:"-" }}</td>
+                <td data-label="Policy">{{ record.policy.title|truncatechars:35 }}</td>
+                <td data-label="Status">
+                    <span class="badge {{ record.status }}">{{ record.status }}</span>
+                </td>
+                <td data-label="Acknowledged">{{ record.acknowledged_at|date:"M d, Y"|default:"-" }}</td>
+                <td data-label="Approved">{{ record.approved_at|date:"M d, Y"|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="empty-state">No compliance records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

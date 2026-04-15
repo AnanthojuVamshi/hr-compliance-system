@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Create User{% endblock %}
+
+{% block content %}
+<style>
+    .form-box {
+        max-width: 450px;
+        margin: 40px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .form-box h2 {
+        margin: 0 0 5px;
+        font-size: 1.5rem;
+    }
+    
+    .form-box p {
+        color: #666;
+        margin-bottom: 25px;
+    }
+    
+    .field {
+        margin-bottom: 18px;
+    }
+    
+    .field label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+    
+    .field input,
+    .field select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+    }
+    
+    .field input:focus,
+    .field select:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    
+    .help {
+        font-size: 0.7rem;
+        color: #888;
+        margin-top: 4px;
+    }
+    
+    .buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 25px;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: none;
+        flex: 1;
+        text-align: center;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #5a67d8;
+    }
+    
+    .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+    }
+    
+    .btn-secondary:hover {
+        background: #e0e0e0;
+    }
+    
+    .error {
+        color: #dc2626;
+        font-size: 0.75rem;
+        margin-top: 4px;
+    }
+</style>
+
+<div class="form-box">
+    <h2>Create User</h2>
+    <p>Add a new user to the system</p>
+    
+    <form method="post" id="createUserForm">
+        {% csrf_token %}
+        
+        <div class="field">
+            <label>Username *</label>
+            <input type="text" name="username" placeholder="Enter username" required>
+        </div>
+        
+        <div class="field">
+            <label>Email *</label>
+            <input type="email" name="email" placeholder="user@example.com" required>
+        </div>
+        
+        <div class="field">
+            <label>Password *</label>
+            <input type="password" name="password" placeholder="Enter password" required>
+            <div class="help">Minimum 6 characters</div>
+        </div>
+        
+        <div class="field">
+            <label>Role *</label>
+            <select name="role" required>
+                <option value="">Select role</option>
+                <option value="employee">Employee</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+        
+        <div class="field">
+            <label>Department</label>
+            <input type="text" name="department" placeholder="e.g., Human Resources">
+            <div class="help">Optional</div>
+        </div>
+        
+        <div class="buttons">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a href="{% url 'admin_users' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('createUserForm').addEventListener('submit', function(e) {
+    const password = document.querySelector('input[name="password"]').value;
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters');
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}

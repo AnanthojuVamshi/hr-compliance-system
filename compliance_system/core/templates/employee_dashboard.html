@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% block title %}Employee Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-header {
+        margin-bottom: 25px;
+    }
+    
+    .dashboard-header h1 {
+        font-size: 1.5rem;
+        color: #1e293b;
+        margin: 0 0 8px 0;
+    }
+    
+    .dashboard-header p {
+        color: #64748b;
+        margin: 0;
+        font-size: 0.85rem;
+    }
+    
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .card h3 {
+        margin: 0 0 15px 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e293b;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+    
+    .policy-card {
+        border-left: 3px solid;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f8fafc;
+        border-radius: 8px;
+    }
+    
+    .policy-card.pending {
+        border-left-color: #f59e0b;
+    }
+    
+    .policy-card.acknowledged {
+        border-left-color: #3b82f6;
+    }
+    
+    .policy-card.approved {
+        border-left-color: #10b981;
+    }
+    
+    .policy-card h4 {
+        margin: 0 0 10px 0;
+        color: #1e293b;
+        font-size: 1rem;
+    }
+    
+    .policy-card p {
+        color: #475569;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+    
+    .policy-card small {
+        font-size: 0.7rem;
+        color: #64748b;
+        display: block;
+        margin-bottom: 10px;
+    }
+    
+    .policy-card textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 0.8rem;
+        resize: vertical;
+        margin: 10px 0;
+    }
+    
+    .policy-card textarea:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .btn-success {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .btn-success:hover {
+        background: #059669;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+    
+    .badge.pending-approval {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .badge.approved {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .empty-message {
+        text-align: center;
+        padding: 30px;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .button-group {
+            flex-direction: column;
+        }
+        
+        .btn-success, .btn-danger {
+            width: 100%;
+        }
+        
+        .card {
+            padding: 15px;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+
+<div class="dashboard-header">
+    <h1>Welcome, {{ user.username }}</h1>
+    <p>Department: {{ user.department|default:"Not assigned" }}</p>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card">
+        <h3>Pending Policies ({{ pending_records|length }})</h3>
+        {% for record in pending_records %}
+        <div class="policy-card pending">
+            <h4>{{ record.policy.title }}</h4>
+            <p>{{ record.policy.description|truncatewords:30 }}</p>
+            <small>Deadline: {{ record.policy.deadline }}</small>
+            <form method="post" action="{% url 'acknowledge_policy' record.id %}" class="inline-form">
+                {% csrf_token %}
+                <textarea name="remark" placeholder="Add remarks (optional)" rows="2"></textarea>
+                <div class="button-group">
+                    <button type="submit" name="action" value="acknowledge" class="btn-success">Acknowledge</button>
+                    <button type="submit" name="action" value="reject" class="btn-danger">Reject</button>
+                </div>
+            </form>
+        </div>
+        {% empty %}
+        <div class="empty-message">No pending policies</div>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h3>Acknowledged ({{ acknowledged_records|length }})</h3>
+        {% for record in acknowledged_records %}
+        <div class="policy-card acknowledged">
+            <h4>{{ record.policy.title }}</h4>
+            <small>Acknowledged: {{ record.acknowledged_at|date }}</small>
+            <p>Your remark: {{ record.employee_remark|default:"No remark" }}</p>
+            <span class="badge pending-approval">Waiting for manager approval</span>
+        </div>
+        {% empty %}
+        <div class="empty-message">No acknowledged policies</div>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h3>Approved ({{ approved_records|length }})</h3>
+        {% for record in approved_records %}
+        <div class="policy-card approved">
+            <h4>{{ record.policy.title }}</h4>
+            <small>Approved: {{ record.approved_at|date }}</small>
+            <span class="badge approved">Approved</span>
+        </div>
+        {% empty %}
+        <div class="empty-message">No approved policies yet</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

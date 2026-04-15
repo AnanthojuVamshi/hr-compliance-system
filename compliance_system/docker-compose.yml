@@ -1,0 +1,46 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    container_name: compliance_db
+    restart: always
+    environment:
+      - POSTGRES_DB=compliance_db
+      - POSTGRES_USER=compliance_user
+      - POSTGRES_PASSWORD=compliance_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U compliance_user -d compliance_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django Web Application
+  web:
+    build: .
+    container_name: compliance_web
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_ENV=production
+      - DB_NAME=compliance_db
+      - DB_USER=compliance_user
+      - DB_PASSWORD=compliance_password
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    command: python manage.py runserver 0.0.0.0:8000
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

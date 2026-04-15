@@ -10,24 +10,23 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     python3-dev \
+    libpq-dev \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first
+# Copy requirements and install
 COPY requirements.txt .
-
-# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy everything from current directory
+# Copy project files
 COPY . .
+
+# Make entrypoint executable
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Create necessary directories
 RUN mkdir -p /app/staticfiles /app/media
 
-# Run migrations and collect static
-RUN python manage.py migrate --noinput || true
-RUN python manage.py collectstatic --noinput || true
-
-EXPOSE 8000
-
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
